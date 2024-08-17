@@ -3,14 +3,24 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/yusufguntav/hospital-management/pkg/domains/hospital"
+	"github.com/yusufguntav/hospital-management/pkg/dtos"
 )
 
 func HospitalRoutes(r *gin.RouterGroup, s hospital.IHospitalService) {
-	r.GET("/x", x(s))
+	r.POST("/register", register(s))
 }
 
-func x(s hospital.IHospitalService) func(c *gin.Context) {
+func register(s hospital.IHospitalService) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "x"})
+		var req dtos.DTOHospitalRegister
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		if err := s.Register(c, req); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(201, gin.H{"message": "Hospital registered"})
 	}
 }

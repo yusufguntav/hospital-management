@@ -33,6 +33,7 @@ func InitDB(dbc config.Database) {
 		}
 		db.AutoMigrate(
 			&entities.Hospital{},
+			&entities.User{},
 		)
 	})
 }
