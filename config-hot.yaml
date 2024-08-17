@@ -1,0 +1,28 @@
+app:
+  name: deneme
+  port: 8000
+  host:
+database:
+  host: hospital-db
+  port: 5432
+  user: deneme
+  pass: deneme
+  name: deneme
+allows:
+  methods:
+  - GET
+  - POST
+  - PUT
+  - PATCH
+  - DELETE
+  - OPTIONS
+  headers:
+  - Content-Type
+  - Authorization
+  - X-CSRF-Token
+  - data-api-key
+  origins:
+    - http://localhost:8000
+    - http://localhost:9000
+    - http://localhost:4040
+    - http://localhost:3000

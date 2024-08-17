@@ -1,0 +1,40 @@
+version: "3"
+services:
+  hospital-db:
+    image: "postgres:14.6"
+    container_name: hospital-db
+    volumes:
+      - hospital:/var/lib/postgresql/data
+    networks:
+      - main
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+
+  hospital:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: hospital
+    container_name: hospital
+    restart: always
+    networks:
+      - main
+    volumes:
+      - ./:/app
+      - ./config-hot.yaml:/app/config.yaml
+    ports:
+      - 8000:8000
+    depends_on:
+      - hospital-db
+  
+volumes:
+  hospital:
+
+networks:
+  main:
+    name: main_network
+    driver: bridge
