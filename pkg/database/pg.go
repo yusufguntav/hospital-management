@@ -7,6 +7,7 @@ import (
 
 	"github.com/yusufguntav/hospital-management/pkg/config"
 	"github.com/yusufguntav/hospital-management/pkg/entities"
+	"github.com/yusufguntav/hospital-management/pkg/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -34,8 +35,38 @@ func InitDB(dbc config.Database) {
 		db.AutoMigrate(
 			&entities.Hospital{},
 			&entities.User{},
+			&entities.City{},
+			&entities.District{},
 		)
 	})
+	addDatas()
+}
+func addDatas() {
+	var count int64
+	DBClient().Model(&entities.City{}).Count(&count)
+	if count == 0 {
+		log.Println("Adding cities")
+		cities := []entities.City{}
+		if err := utils.ReadJsonFile("./pkg/data/city.json", &cities); err != nil {
+			log.Print("Error:", err)
+		}
+		for _, city := range cities {
+			DBClient().Create(&city)
+		}
+	}
+	count = 0
+
+	DBClient().Model(&entities.District{}).Count(&count)
+	if count == 0 {
+		log.Println("Adding districts")
+		districts := []entities.District{}
+		if err := utils.ReadJsonFile("./pkg/data/districts.json", &districts); err != nil {
+			log.Print("Error:", err)
+		}
+		for _, district := range districts {
+			DBClient().Create(&district)
+		}
+	}
 }
 
 func DBClient() *gorm.DB {

@@ -14,5 +14,4 @@ func StartApp() {
 	database.InitDB(config.Database)
 	cache.InitRedis(config.Redis)
 	server.LaunchHttpServer(config.App, config.Allows)
-
 }

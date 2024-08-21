@@ -8,11 +8,12 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/yusufguntav/hospital-management/pkg/config"
+	"github.com/yusufguntav/hospital-management/pkg/entities"
+	"github.com/yusufguntav/hospital-management/pkg/utils"
 )
 
 var client *redis.Client
 
-// TODO kodlar tek satıra indireilcek err handler
 func InitRedis(redisConf config.Redis) {
 	client = redis.NewClient(&redis.Options{
 		Addr:     redisConf.Host + ":" + redisConf.Port,
@@ -21,8 +22,7 @@ func InitRedis(redisConf config.Redis) {
 }
 
 func IsExist(ctx context.Context, key string) bool {
-	err := client.WithContext(ctx).Get(key).Err()
-	if err != nil {
+	if err := client.WithContext(ctx).Get(key).Err(); err != nil {
 		log.Println("cache error: ", err)
 		return false
 	}
@@ -35,8 +35,7 @@ func Set(ctx context.Context, key string, list interface{}, ex int64) error {
 	if err != nil {
 		return err
 	}
-	err = client.WithContext(ctx).Set(key, jsondata, time.Duration(ex*int64(time.Second))).Err()
-	if err != nil {
+	if err := client.WithContext(ctx).Set(key, jsondata, time.Duration(ex*int64(time.Second))).Err(); err != nil {
 		return err
 	}
 	return nil
@@ -53,4 +52,20 @@ func Get(ctx context.Context, key string) (interface{}, error) {
 	}
 
 	return data, nil
+}
+
+func AddDistrictsAndCities(c context.Context) error {
+	var districts []entities.District
+	utils.ReadJsonFile("./pkg/data/districts.json", &districts)
+	if err := Set(c, "districts", districts, 0); err != nil {
+		return err
+	}
+
+	var cities []entities.City
+	utils.ReadJsonFile("./pkg/data/city.json", &cities)
+	if err := Set(c, "cities", cities, 0); err != nil {
+		return err
+	}
+
+	return nil
 }
