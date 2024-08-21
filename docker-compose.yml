@@ -30,7 +30,19 @@ services:
       - 8000:8000
     depends_on:
       - hospital-db
-  
+      - hospital-redis
+
+  hospital-redis:
+    image: "redis:latest"
+    container_name: hospital-redis
+    networks:
+      - main
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+
 volumes:
   hospital:
 

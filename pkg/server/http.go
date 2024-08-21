@@ -41,7 +41,6 @@ func LaunchHttpServer(appc config.App, allows config.Allows) {
 		AllowCredentials: false,
 		MaxAge:           12 * time.Hour,
 	}))
-
 	p := ginprom.New(
 		ginprom.Engine(app),
 		ginprom.Subsystem("gin"),

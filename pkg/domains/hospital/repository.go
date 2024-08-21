@@ -22,6 +22,9 @@ func NewHospitalRepository(db *gorm.DB) IHospitalRepository {
 }
 
 func (ur *HospitalRepository) Register(c context.Context, req dtos.DTOHospitalRegister) error {
+
+	//Check if district code and city code is valid
+
 	// Password hashing
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.Manager.Password), bcrypt.DefaultCost)
 	if err != nil {

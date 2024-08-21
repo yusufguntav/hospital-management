@@ -6,18 +6,18 @@ import (
 	"github.com/yusufguntav/hospital-management/pkg/dtos"
 )
 
-func HospitalRoutes(r *gin.RouterGroup, s hospital.IHospitalService) {
-	r.POST("/register", register(s))
+func HospitalRoutes(r *gin.RouterGroup, h hospital.IHospitalService) {
+	r.POST("/register", hospitalRegister(h))
 }
 
-func register(s hospital.IHospitalService) func(c *gin.Context) {
+func hospitalRegister(h hospital.IHospitalService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var req dtos.DTOHospitalRegister
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
 			return
 		}
-		if err := s.Register(c, req); err != nil {
+		if err := h.Register(c, req); err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
 			return
 		}

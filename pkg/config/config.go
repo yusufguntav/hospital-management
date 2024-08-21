@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	App      App      `yaml:"app"`
+	Redis    Redis    `yaml:"redis"`
 	Database Database `yaml:"database"`
 	Allows   Allows   `yaml:"allows"`
 }
@@ -17,6 +18,12 @@ type App struct {
 	Name string `yaml:"name"`
 	Port string `yaml:"port"`
 	Host string `yaml:"host"`
+}
+
+type Redis struct {
+	Host string `yaml:"host"`
+	Port string `yaml:"port"`
+	Pass string `yaml:"pass"`
 }
 
 type Database struct {

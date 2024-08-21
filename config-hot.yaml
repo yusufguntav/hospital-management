@@ -2,6 +2,10 @@ app:
   name: deneme
   port: 8000
   host:
+redis:
+  host: hospital-redis
+  port: 6379
+  pass: deneme
 database:
   host: hospital-db
   port: 5432
