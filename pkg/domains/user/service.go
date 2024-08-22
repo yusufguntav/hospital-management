@@ -7,10 +7,11 @@ import (
 )
 
 type IUserService interface {
-	RegisterSubUser(c context.Context, req dtos.DTOSubUserRegister) error
+	RegisterSubUser(c context.Context, req dtos.DTOUserWithRole) error
 	Login(c context.Context, req dtos.DTOUserLogin) (string, error)
 	ResetPasswordApprove(c context.Context, phoneNumber string, areaCode string) (int, error)
 	ResetPassword(c context.Context, req dtos.DTOResetPassword) error
+	UpdateUser(c context.Context, req dtos.DTOUserWithRoleAndID) error
 }
 
 type UserService struct {
@@ -21,11 +22,14 @@ func NewUserService(ur IUserRepository) IUserService {
 	return &UserService{ur}
 }
 
+func (ur *UserService) UpdateUser(c context.Context, req dtos.DTOUserWithRoleAndID) error {
+	return ur.UserRepository.UpdateUser(c, req)
+}
 func (ur *UserService) Login(c context.Context, req dtos.DTOUserLogin) (string, error) {
 	return ur.UserRepository.Login(c, req)
 }
 
-func (ur *UserService) RegisterSubUser(c context.Context, req dtos.DTOSubUserRegister) error {
+func (ur *UserService) RegisterSubUser(c context.Context, req dtos.DTOUserWithRole) error {
 	return ur.UserRepository.RegisterSubUser(c, req)
 }
 

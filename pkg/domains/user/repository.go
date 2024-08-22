@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	"github.com/yusufguntav/hospital-management/pkg/cache"
 	"github.com/yusufguntav/hospital-management/pkg/dtos"
 	"github.com/yusufguntav/hospital-management/pkg/entities"
@@ -17,8 +18,9 @@ import (
 )
 
 type IUserRepository interface {
-	RegisterSubUser(c context.Context, req dtos.DTOSubUserRegister) error
+	RegisterSubUser(c context.Context, req dtos.DTOUserWithRole) error
 	Login(c context.Context, req dtos.DTOUserLogin) (string, error)
+	UpdateUser(c context.Context, req dtos.DTOUserWithRoleAndID) error
 	ResetPasswordApprove(c context.Context, phoneNumber string, areaCode string) (int, error)
 	ResetPassword(c context.Context, req dtos.DTOResetPassword) error
 }
@@ -56,22 +58,14 @@ func (ur *UserRepository) Login(c context.Context, req dtos.DTOUserLogin) (strin
 
 	return token, nil
 }
-func (ur *UserRepository) RegisterSubUser(c context.Context, req dtos.DTOSubUserRegister) error {
+func (ur *UserRepository) RegisterSubUser(c context.Context, req dtos.DTOUserWithRole) error {
 	if req.Role == entities.Owner {
 		return errors.New("role cannot be owner")
 	}
 
-	// Check if email or phone number already exists
-	var count int64
-	ur.db.WithContext(c).Model(entities.User{}).Where("email = ? OR (phone = ? AND area_code = ?)", req.Email, req.Phone, req.AreaCode).Count(&count)
-	if count > 0 {
-		return errors.New("email, phone number or id already exists")
-	}
-
-	// Check if ID already exists
-	ur.db.WithContext(c).Model(entities.User{}).Where("id = ?", req.ID).Count(&count)
-	if count > 0 {
-		return errors.New("email, phone number or id already exists")
+	// Check if email, phone number or id already exists
+	if _, err := checkIfEmailOrPhoneNumberOrIdExists(c, ur.db, req.Email, req.AreaCode, req.Phone, req.ID); err != nil {
+		return err
 	}
 
 	// Password hashing
@@ -144,4 +138,63 @@ func (ur *UserRepository) ResetPassword(c context.Context, req dtos.DTOResetPass
 	ur.db.WithContext(c).Model(entities.User{}).Where("phone = ? AND area_code = ?", req.PhoneNumber, req.AreaCode).Update("password", string(passwordHash))
 
 	return nil
+}
+
+func (ur *UserRepository) UpdateUser(c context.Context, req dtos.DTOUserWithRoleAndID) error {
+
+	if req.Role == entities.Owner {
+		return errors.New("role cannot be owner")
+	}
+
+	if req.Role == entities.Staff && state.CurrentUserRole(c) != entities.Owner {
+		return errors.New("only owner can downgrade manager role to staff")
+	}
+
+	_, err := checkIfUserExists(c, ur.db, req.UUID)
+
+	if err != nil {
+		return err
+	}
+
+	// Check if email, phone number or id already exists
+	if user, err := checkIfEmailOrPhoneNumberOrIdExists(c, ur.db, req.Email, req.AreaCode, req.Phone, req.ID); err != nil && user.Base.UUID.String() != req.UUID {
+		return err
+	}
+
+	// Password hashing
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	// Update user
+	newUser := entities.User{
+		ID:       req.ID,
+		Name:     req.Name,
+		Surname:  req.Surname,
+		Contact:  entities.Contact{Email: req.Email, Phone: req.Phone, AreaCode: req.AreaCode},
+		Role:     req.Role,
+		Password: string(passwordHash),
+	}
+
+	if err := ur.db.WithContext(c).Model(&entities.User{}).Where("uuid = ?", req.UUID).Updates(newUser).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func checkIfEmailOrPhoneNumberOrIdExists(c context.Context, db *gorm.DB, email string, areaCode string, phoneNumber string, ID string) (entities.User, error) {
+	var user entities.User
+	db.WithContext(c).Model(entities.User{}).Where("email = ? OR (phone = ? AND area_code = ?) OR id = ?", email, phoneNumber, areaCode, ID).First(&user)
+	if user.Base.UUID != uuid.Nil {
+		return user, errors.New("email, phone number or id already exists")
+	}
+	return entities.User{}, nil
+}
+func checkIfUserExists(c context.Context, db *gorm.DB, id string) (entities.User, error) {
+	var user entities.User
+	if err := db.WithContext(c).Where("uuid = ?", id).First(&user).Error; err != nil {
+		return entities.User{}, err
+	}
+	return user, nil
 }

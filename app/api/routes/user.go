@@ -13,6 +13,7 @@ func UserRoutes(r *gin.RouterGroup, u user.IUserService) {
 	r.POST("/login", userLogin(u))
 	r.POST("/password-approve/:areaCode/:phoneNumber", userResetPasswordApprove(u))
 	r.POST("/password-reset", userResetPassword(u))
+	r.PUT("/update", middleware.CheckAuth(entities.Owner, entities.Manager), userUpdate(u))
 }
 
 func userLogin(u user.IUserService) func(c *gin.Context) {
@@ -32,7 +33,7 @@ func userLogin(u user.IUserService) func(c *gin.Context) {
 }
 func subUserRegister(u user.IUserService) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		var req dtos.DTOSubUserRegister
+		var req dtos.DTOUserWithRole
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
 			return
@@ -42,6 +43,21 @@ func subUserRegister(u user.IUserService) func(c *gin.Context) {
 			return
 		}
 		c.JSON(201, gin.H{"message": "User registered"})
+	}
+}
+
+func userUpdate(u user.IUserService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		var req dtos.DTOUserWithRoleAndID
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		if err := u.UpdateUser(c, req); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, gin.H{"message": "User updated"})
 	}
 }
 
