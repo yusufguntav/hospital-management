@@ -9,7 +9,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/yusufguntav/hospital-management/pkg/config"
 	"github.com/yusufguntav/hospital-management/pkg/entities"
-	"github.com/yusufguntav/hospital-management/pkg/utils"
+	"gorm.io/gorm"
 )
 
 var client *redis.Client
@@ -40,32 +40,48 @@ func Set(ctx context.Context, key string, list interface{}, ex int64) error {
 	}
 	return nil
 }
-func Get(ctx context.Context, key string) (interface{}, error) {
+func Get(ctx context.Context, key string, data interface{}) error {
 	result, err := client.WithContext(ctx).Get(key).Result()
 	if err != nil {
-		return nil, err
-	}
-
-	var data interface{}
-	if err := json.Unmarshal([]byte(result), &data); err != nil {
-		return nil, err
-	}
-
-	return data, nil
-}
-
-func AddDistrictsAndCities(c context.Context) error {
-	var districts []entities.District
-	utils.ReadJsonFile("./pkg/data/districts.json", &districts)
-	if err := Set(c, "districts", districts, 0); err != nil {
 		return err
 	}
 
-	var cities []entities.City
-	utils.ReadJsonFile("./pkg/data/city.json", &cities)
-	if err := Set(c, "cities", cities, 0); err != nil {
+	if err := json.Unmarshal([]byte(result), &data); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func GetDistrictsAndCities(c context.Context, db *gorm.DB) (*[]entities.District, *[]entities.City, error) {
+
+	cacheDistricts := []entities.District{}
+	err := Get(c, "districts", &cacheDistricts)
+
+	if err != nil {
+		return nil, nil, err
+	}
+	if len(cacheDistricts) == 0 || cacheDistricts == nil {
+		log.Println("Adding districts to cache")
+		var districts []entities.District
+		db.WithContext(c).Find(&districts)
+		Set(c, "districts", districts, 0)
+		cacheDistricts = districts
+	}
+
+	cacheCities := []entities.City{}
+	err = Get(c, "cities", &cacheCities)
+
+	if err != nil {
+		return nil, nil, err
+	}
+	if len(cacheCities) == 0 || cacheCities == nil {
+		log.Println("Adding cities to cache")
+		var cities []entities.City
+		db.WithContext(c).Find(&cities)
+		Set(c, "cities", cities, 0)
+		cacheCities = cities
+	}
+
+	return &cacheDistricts, &cacheCities, nil
 }

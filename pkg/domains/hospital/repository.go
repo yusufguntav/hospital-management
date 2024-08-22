@@ -2,7 +2,9 @@ package hospital
 
 import (
 	"context"
+	"errors"
 
+	"github.com/yusufguntav/hospital-management/pkg/cache"
 	"github.com/yusufguntav/hospital-management/pkg/dtos"
 	"github.com/yusufguntav/hospital-management/pkg/entities"
 	"golang.org/x/crypto/bcrypt"
@@ -23,7 +25,24 @@ func NewHospitalRepository(db *gorm.DB) IHospitalRepository {
 
 func (ur *HospitalRepository) Register(c context.Context, req dtos.DTOHospitalRegister) error {
 
-	//Check if district code and city code is valid
+	cacheDistricts, _, err := cache.GetDistrictsAndCities(c, ur.db)
+
+	if err != nil {
+		return err
+	}
+
+	// Check if district code is valid
+	isCityAndDistrictValid := false
+	for _, district := range *cacheDistricts {
+		if district.ID == req.HDistrictCode && district.CityId == req.HCityCode {
+			isCityAndDistrictValid = true
+			break
+		}
+	}
+
+	if !isCityAndDistrictValid {
+		return errors.New("invalid city or district code")
+	}
 
 	// Password hashing
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.Manager.Password), bcrypt.DefaultCost)

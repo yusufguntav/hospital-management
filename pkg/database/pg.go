@@ -45,7 +45,7 @@ func addDatas() {
 	var count int64
 	DBClient().Model(&entities.City{}).Count(&count)
 	if count == 0 {
-		log.Println("Adding cities")
+		log.Println("Adding cities to db")
 		cities := []entities.City{}
 		if err := utils.ReadJsonFile("./pkg/data/city.json", &cities); err != nil {
 			log.Print("Error:", err)
@@ -58,7 +58,7 @@ func addDatas() {
 
 	DBClient().Model(&entities.District{}).Count(&count)
 	if count == 0 {
-		log.Println("Adding districts")
+		log.Println("Adding districts to db")
 		districts := []entities.District{}
 		if err := utils.ReadJsonFile("./pkg/data/districts.json", &districts); err != nil {
 			log.Print("Error:", err)

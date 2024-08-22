@@ -1,7 +1,7 @@
 package entities
 
 type District struct {
-	ID     string `json:"id" gorm:"primaryKey"`
+	ID     int    `json:"id" gorm:"primaryKey"`
 	Name   string `json:"name"`
-	CityId string `json:"cityId" gorm:"foreignKey:CityID"`
+	CityId int    `json:"cityId" gorm:"foreignKey:CityID"`
 }
