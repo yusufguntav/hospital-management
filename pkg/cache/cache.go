@@ -56,11 +56,8 @@ func Get(ctx context.Context, key string, data interface{}) error {
 func GetDistrictsAndCities(c context.Context, db *gorm.DB) (*[]entities.District, *[]entities.City, error) {
 
 	cacheDistricts := []entities.District{}
-	err := Get(c, "districts", &cacheDistricts)
+	Get(c, "districts", &cacheDistricts)
 
-	if err != nil {
-		return nil, nil, err
-	}
 	if len(cacheDistricts) == 0 || cacheDistricts == nil {
 		log.Println("Adding districts to cache")
 		var districts []entities.District
@@ -70,11 +67,8 @@ func GetDistrictsAndCities(c context.Context, db *gorm.DB) (*[]entities.District
 	}
 
 	cacheCities := []entities.City{}
-	err = Get(c, "cities", &cacheCities)
+	Get(c, "cities", &cacheCities)
 
-	if err != nil {
-		return nil, nil, err
-	}
 	if len(cacheCities) == 0 || cacheCities == nil {
 		log.Println("Adding cities to cache")
 		var cities []entities.City
