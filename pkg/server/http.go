@@ -13,6 +13,7 @@ import (
 	"github.com/yusufguntav/hospital-management/pkg/config"
 	"github.com/yusufguntav/hospital-management/pkg/database"
 	"github.com/yusufguntav/hospital-management/pkg/domains/hospital"
+	"github.com/yusufguntav/hospital-management/pkg/domains/user"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
@@ -55,6 +56,10 @@ func LaunchHttpServer(appc config.App, allows config.Allows) {
 	hospital_repo := hospital.NewHospitalRepository(db)
 	hospital_service := hospital.NewHospitalService(hospital_repo)
 	routes.HospitalRoutes(api.Group("/hospital"), hospital_service)
+
+	user_repo := user.NewUserRepository(db)
+	user_service := user.NewUserService(user_repo)
+	routes.UserRoutes(api.Group("/user"), user_service)
 
 	fmt.Println("Server is running on port " + appc.Port)
 	app.Run(net.JoinHostPort(appc.Host, appc.Port))
