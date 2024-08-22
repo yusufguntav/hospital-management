@@ -10,10 +10,26 @@ import (
 
 func UserRoutes(r *gin.RouterGroup, u user.IUserService) {
 	r.POST("/register", userRegister(u), middleware.CheckAuth(entities.Owner, entities.Manager))
+	r.POST("/login", userLogin(u))
 	r.POST("/password-approve/:areaCode/:phoneNumber", userResetPasswordApprove(u))
 	r.POST("/password-reset", userResetPassword(u))
 }
 
+func userLogin(u user.IUserService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		var req dtos.DTOUserLogin
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		token, err := u.Login(c, req)
+		if err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, gin.H{"token": token})
+	}
+}
 func userRegister(u user.IUserService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var req dtos.DTOUserRegister

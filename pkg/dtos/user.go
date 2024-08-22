@@ -23,6 +23,11 @@ type DTOUserRegister struct {
 	Role     entities.AuthRole `json:"role" binding:"required"`
 }
 
+type DTOUserLogin struct {
+	MailOrPhone string `json:"mail_or_phone"  binding:"required"`
+	Password    string `json:"password" binding:"required"`
+}
+
 type DTOResetPassword struct {
 	PhoneNumber string `json:"phone_number" binding:"required"`
 	AreaCode    string `json:"area_code" binding:"required"`

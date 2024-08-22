@@ -8,6 +8,7 @@ import (
 
 type IUserService interface {
 	Register(c context.Context, req dtos.DTOUserRegister) error
+	Login(c context.Context, req dtos.DTOUserLogin) (string, error)
 	ResetPasswordApprove(c context.Context, phoneNumber string, areaCode string) (int, error)
 	ResetPassword(c context.Context, req dtos.DTOResetPassword) error
 }
@@ -18,6 +19,10 @@ type UserService struct {
 
 func NewUserService(ur IUserRepository) IUserService {
 	return &UserService{ur}
+}
+
+func (ur *UserService) Login(c context.Context, req dtos.DTOUserLogin) (string, error) {
+	return ur.UserRepository.Login(c, req)
 }
 
 func (ur *UserService) Register(c context.Context, req dtos.DTOUserRegister) error {
