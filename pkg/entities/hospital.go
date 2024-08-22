@@ -10,5 +10,4 @@ type Hospital struct {
 	Address      string `json:"address" gorm:"type:varchar(255)"`
 	CityCode     int    `json:"city_code" gorm:"type:integer"`
 	DistrictCode int    `json:"district_code" gorm:"type:integer"`
-	ManagerId    string `json:"manager_id" gorm:"type:varchar(255)"`
 }

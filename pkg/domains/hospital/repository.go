@@ -56,20 +56,6 @@ func (ur *HospitalRepository) Register(c context.Context, req dtos.DTOHospitalRe
 		return tx.Error
 	}
 
-	// Owner user creation
-	entUser := entities.User{
-		ID:      req.Manager.ID,
-		Name:    req.Manager.Name,
-		Surname: req.Manager.Surname,
-		Contact: entities.Contact{Email: req.Manager.Email, Phone: req.Manager.Phone, AreaCode: req.Manager.AreaCode},
-		Role:    entities.Owner,
-	}
-	entUser.Password = string(passwordHash)
-	if err := tx.WithContext(c).Create(&entUser).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-
 	// Hospital creation
 	entHospital := entities.Hospital{
 		TID:          req.HTID,
@@ -77,11 +63,26 @@ func (ur *HospitalRepository) Register(c context.Context, req dtos.DTOHospitalRe
 		Address:      req.HAddress,
 		CityCode:     req.HCityCode,
 		DistrictCode: req.HDistrictCode,
-		ManagerId:    entUser.Base.UUID.String(),
 		Contact:      entities.Contact{Email: req.HEmail, Phone: req.HPhone, AreaCode: req.HAreaCode},
 	}
 
 	if err := tx.WithContext(c).Create(&entHospital).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Owner user creation
+	entUser := entities.User{
+		ID:         req.Manager.ID,
+		Name:       req.Manager.Name,
+		Surname:    req.Manager.Surname,
+		Contact:    entities.Contact{Email: req.Manager.Email, Phone: req.Manager.Phone, AreaCode: req.Manager.AreaCode},
+		Role:       entities.Owner,
+		HospitalId: entHospital.Base.UUID.String(),
+	}
+
+	entUser.Password = string(passwordHash)
+	if err := tx.WithContext(c).Create(&entUser).Error; err != nil {
 		tx.Rollback()
 		return err
 	}

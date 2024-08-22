@@ -12,7 +12,7 @@ type DTOOwnerRegister struct {
 	Surname  string `json:"surname" binding:"required"`
 }
 
-type DTOUserRegister struct {
+type DTOSubUserRegister struct {
 	ID       string            `json:"id" binding:"required"`
 	Email    string            `json:"email" binding:"required"`
 	Phone    string            `json:"phone" binding:"required"`

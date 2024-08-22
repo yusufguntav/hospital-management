@@ -8,9 +8,10 @@ import (
 )
 
 const (
-	CurrentUserId   = "CurrentUserId"
-	CurrentUserIP   = "CurrentIP"
-	CurrentUserROLE = "CurrentUserRole"
+	CurrentUserId         = "CurrentUserId"
+	CurrentUserIP         = "CurrentIP"
+	CurrentUserROLE       = "CurrentUserRole"
+	CurrentUserHospitalID = "CurrentUserHospitalId"
 )
 
 func CurrentUserRole(ctx context.Context) entities.AuthRole {
@@ -19,6 +20,14 @@ func CurrentUserRole(ctx context.Context) entities.AuthRole {
 		return entities.Staff
 	}
 	return value.(entities.AuthRole)
+}
+
+func CurrentUserHospitalId(ctx context.Context) string {
+	value := ctx.Value(CurrentUserHospitalID)
+	if value == nil {
+		return ""
+	}
+	return value.(string)
 }
 
 func CurrentUser(ctx context.Context) uuid.UUID {

@@ -73,6 +73,7 @@ func CheckAuth(authRole ...entities.AuthRole) gin.HandlerFunc {
 
 		c.Set(state.CurrentUserId, claims["id"])
 		c.Set(state.CurrentUserROLE, role)
+		c.Set(state.CurrentUserHospitalID, claims["hospitalId"])
 		c.Next()
 	}
 }

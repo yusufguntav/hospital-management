@@ -11,12 +11,13 @@ import (
 	"github.com/yusufguntav/hospital-management/pkg/cache"
 	"github.com/yusufguntav/hospital-management/pkg/dtos"
 	"github.com/yusufguntav/hospital-management/pkg/entities"
+	"github.com/yusufguntav/hospital-management/pkg/state"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type IUserRepository interface {
-	Register(c context.Context, req dtos.DTOUserRegister) error
+	RegisterSubUser(c context.Context, req dtos.DTOSubUserRegister) error
 	Login(c context.Context, req dtos.DTOUserLogin) (string, error)
 	ResetPasswordApprove(c context.Context, phoneNumber string, areaCode string) (int, error)
 	ResetPassword(c context.Context, req dtos.DTOResetPassword) error
@@ -41,9 +42,10 @@ func (ur *UserRepository) Login(c context.Context, req dtos.DTOUserLogin) (strin
 	}
 
 	generateToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":   user.Base.UUID.String(),
-		"exp":  time.Now().Add(time.Hour * 24).Unix(),
-		"role": user.Role,
+		"id":         user.Base.UUID.String(),
+		"exp":        time.Now().Add(time.Hour * 24).Unix(),
+		"role":       user.Role,
+		"hospitalId": user.HospitalId,
 	})
 
 	token, err := generateToken.SignedString([]byte(os.Getenv("SECRET")))
@@ -54,7 +56,48 @@ func (ur *UserRepository) Login(c context.Context, req dtos.DTOUserLogin) (strin
 
 	return token, nil
 }
-func (ur *UserRepository) Register(c context.Context, req dtos.DTOUserRegister) error {
+func (ur *UserRepository) RegisterSubUser(c context.Context, req dtos.DTOSubUserRegister) error {
+	if req.Role == entities.Owner {
+		return errors.New("role cannot be owner")
+	}
+
+	// Check if email or phone number already exists
+	var count int64
+	ur.db.WithContext(c).Model(entities.User{}).Where("email = ? OR (phone = ? AND area_code = ?)", req.Email, req.Phone, req.AreaCode).Count(&count)
+	if count > 0 {
+		return errors.New("email, phone number or id already exists")
+	}
+
+	// Check if ID already exists
+	ur.db.WithContext(c).Model(entities.User{}).Where("id = ?", req.ID).Count(&count)
+	if count > 0 {
+		return errors.New("email, phone number or id already exists")
+	}
+
+	// Password hashing
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	// Create user
+	hospitalId := state.CurrentUserHospitalId(c)
+	if hospitalId == "" || hospitalId == "CurrentUserHospitalId" {
+		return errors.New("hospital id not found")
+	}
+	entUser := entities.User{
+		ID:         req.ID,
+		Name:       req.Name,
+		Surname:    req.Surname,
+		Password:   string(passwordHash),
+		Contact:    entities.Contact{Email: req.Email, Phone: req.Phone, AreaCode: req.AreaCode},
+		Role:       req.Role,
+		HospitalId: state.CurrentUserHospitalId(c),
+	}
+
+	if err := ur.db.WithContext(c).Create(&entUser).Error; err != nil {
+		return err
+	}
 	return nil
 }
 

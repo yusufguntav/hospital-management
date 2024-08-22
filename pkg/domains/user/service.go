@@ -7,7 +7,7 @@ import (
 )
 
 type IUserService interface {
-	Register(c context.Context, req dtos.DTOUserRegister) error
+	RegisterSubUser(c context.Context, req dtos.DTOSubUserRegister) error
 	Login(c context.Context, req dtos.DTOUserLogin) (string, error)
 	ResetPasswordApprove(c context.Context, phoneNumber string, areaCode string) (int, error)
 	ResetPassword(c context.Context, req dtos.DTOResetPassword) error
@@ -25,8 +25,8 @@ func (ur *UserService) Login(c context.Context, req dtos.DTOUserLogin) (string, 
 	return ur.UserRepository.Login(c, req)
 }
 
-func (ur *UserService) Register(c context.Context, req dtos.DTOUserRegister) error {
-	return ur.UserRepository.Register(c, req)
+func (ur *UserService) RegisterSubUser(c context.Context, req dtos.DTOSubUserRegister) error {
+	return ur.UserRepository.RegisterSubUser(c, req)
 }
 
 func (ur *UserService) ResetPasswordApprove(c context.Context, phoneNumber string, areaCode string) (int, error) {

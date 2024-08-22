@@ -13,9 +13,10 @@ const (
 type User struct {
 	Base
 	Contact
-	ID       string   `json:"id" gorm:"type:varchar(255);unique"`
-	Name     string   `json:"name"`
-	Surname  string   `json:"surname"`
-	Password string   `json:"password"`
-	Role     AuthRole `json:"role"`
+	ID         string   `json:"id" gorm:"type:varchar(255);unique"`
+	Name       string   `json:"name"`
+	Surname    string   `json:"surname"`
+	Password   string   `json:"password"`
+	Role       AuthRole `json:"role"`
+	HospitalId string   `json:"hospital_id"`
 }
