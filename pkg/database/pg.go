@@ -39,6 +39,7 @@ func InitDB(dbc config.Database) {
 			&entities.District{},
 			&entities.Job{},
 			&entities.Title{},
+			&entities.Employee{},
 		)
 	})
 	addDatas()

@@ -53,6 +53,7 @@ func Get(ctx context.Context, key string, data interface{}) error {
 	return nil
 }
 
+// TODO: GetDistrcitsAndCities ve GetJobsAndTitles benzer yapıdalar fonksiyona dök
 func GetDistrictsAndCities(c context.Context, db *gorm.DB) (*[]entities.District, *[]entities.City, error) {
 
 	cacheDistricts := []entities.District{}
@@ -78,4 +79,35 @@ func GetDistrictsAndCities(c context.Context, db *gorm.DB) (*[]entities.District
 	}
 
 	return &cacheDistricts, &cacheCities, nil
+}
+
+func GetJobs(c context.Context, db *gorm.DB) (*[]entities.Job, error) {
+
+	cacheJobs := []entities.Job{}
+	Get(c, "jobs", &cacheJobs)
+
+	if len(cacheJobs) == 0 || cacheJobs == nil {
+		log.Println("Adding jobs to cache")
+		var jobs []entities.Job
+		db.WithContext(c).Find(&jobs)
+		Set(c, "jobs", jobs, 0)
+		cacheJobs = jobs
+	}
+
+	return &cacheJobs, nil
+}
+func GetTitles(c context.Context, db *gorm.DB) (*[]entities.Title, error) {
+
+	cacheTitles := []entities.Title{}
+	Get(c, "titles", &cacheTitles)
+
+	if len(cacheTitles) == 0 || cacheTitles == nil {
+		log.Println("Adding cities to cache")
+		var titles []entities.Title
+		db.WithContext(c).Find(&titles)
+		Set(c, "titles", titles, 0)
+		cacheTitles = titles
+	}
+
+	return &cacheTitles, nil
 }
