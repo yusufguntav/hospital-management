@@ -11,3 +11,7 @@ type Hospital struct {
 	CityCode     int    `json:"city_code" gorm:"type:integer"`
 	DistrictCode int    `json:"district_code" gorm:"type:integer"`
 }
+
+func (Hospital) TableName() string {
+	return "hospital"
+}

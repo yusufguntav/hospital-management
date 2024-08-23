@@ -99,7 +99,10 @@ func (ur *UserRepository) ResetPasswordApprove(c context.Context, phoneNumber st
 
 	//Check if phone number is valid
 	var count int64
-	ur.db.WithContext(c).Model(entities.User{}).Where("phone = ? AND area_code = ?", phoneNumber, areaCode).Count(&count)
+	if err := ur.db.WithContext(c).Model(entities.User{}).Where("phone = ? AND area_code = ?", phoneNumber, areaCode).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
 	if count == 0 {
 		return 0, errors.New("phone number not found")
 	}

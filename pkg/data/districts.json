@@ -2,466 +2,466 @@
   {
     "id": 1,
     "name": "Adalar",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 2,
     "name": "Arnavutköy",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 3,
     "name": "Ataşehir",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 4,
     "name": "Avcılar",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 5,
     "name": "Bağcılar",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 6,
     "name": "Bahçelievler",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 7,
     "name": "Bakırköy",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 8,
     "name": "Başakşehir",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 9,
     "name": "Bayrampaşa",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 10,
     "name": "Beşiktaş",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 11,
     "name": "Beykoz",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 12,
     "name": "Beylikdüzü",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 13,
     "name": "Beyoğlu",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 14,
     "name": "Büyükçekmece",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 15,
     "name": "Çatalca",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 16,
     "name": "Çekmeköy",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 17,
     "name": "Esenler",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 18,
     "name": "Esenyurt",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 19,
     "name": "Eyüp",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 20,
     "name": "Fatih",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 21,
     "name": "Gaziosmanpaşa",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 22,
     "name": "Güngören",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 23,
     "name": "Kadıköy",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 24,
     "name": "Kağıthane",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 25,
     "name": "Kartal",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 26,
     "name": "Küçükçekmece",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 27,
     "name": "Maltepe",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 28,
     "name": "Pendik",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 29,
     "name": "Sancaktepe",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 30,
     "name": "Sarıyer",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 31,
     "name": "Silivri",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 32,
     "name": "Sultanbeyli",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 33,
     "name": "Sultangazi",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 34,
     "name": "Şile",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 35,
     "name": "Şişli",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 36,
     "name": "Tuzla",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 37,
     "name": "Ümraniye",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 38,
     "name": "Üsküdar",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 39,
     "name": "Zeytinburnu",
-    "cityId": 1
+    "city_id": 1
   },
   {
     "id": 40,
     "name": "Aliağa",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 41,
     "name": "Balçova",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 42,
     "name": "Bayındır",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 43,
     "name": "Bayraklı",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 44,
     "name": "Bergama",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 45,
     "name": "Beydağ",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 46,
     "name": "Bornova",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 47,
     "name": "Buca",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 48,
     "name": "Çeşme",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 49,
     "name": "Çiğli",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 50,
     "name": "Dikili",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 51,
     "name": "Foça",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 52,
     "name": "Gaziemir",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 53,
     "name": "Güzelbahçe",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 54,
     "name": "Karabağlar",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 55,
     "name": "Karaburun",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 56,
     "name": "Karşıyaka",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 57,
     "name": "Kemalpaşa",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 58,
     "name": "Kınık",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 59,
     "name": "Kiraz",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 60,
     "name": "Konak",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 61,
     "name": "Menderes",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 62,
     "name": "Menemen",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 63,
     "name": "Narlıdere",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 64,
     "name": "Ödemiş",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 65,
     "name": "Seferihisar",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 66,
     "name": "Selçuk",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 67,
     "name": "Tire",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 68,
     "name": "Torbalı",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 69,
     "name": "Urla",
-    "cityId": 2
+    "city_id": 2
   },
   {
     "id": 70,
     "name": "Altındağ",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 71,
     "name": "Ayaş",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 72,
     "name": "Bala",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 73,
     "name": "Beypazarı",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 74,
     "name": "Çamlıdere",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 75,
     "name": "Çankaya",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 76,
     "name": "Çubuk",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 77,
     "name": "Elmadağ",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 78,
     "name": "Etimesgut",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 79,
     "name": "Evren",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 80,
     "name": "Gölbaşı",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 81,
     "name": "Güdül",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 82,
     "name": "Haymana",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 83,
     "name": "Kalecik",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 84,
     "name": "Kahramankazan",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 85,
     "name": "Keçiören",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 86,
     "name": "Kızılcahamam",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 87,
     "name": "Mamak",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 88,
     "name": "Nallıhan",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 89,
     "name": "Polatlı",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 90,
     "name": "Pursaklar",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 91,
     "name": "Sincan",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 92,
     "name": "Şereflikoçhisar",
-    "cityId": 3
+    "city_id": 3
   },
   {
     "id": 93,
     "name": "Yenimahalle",
-    "cityId": 3
+    "city_id": 3
   }
 ]

@@ -9,7 +9,6 @@ const (
 )
 
 // TODO Veri tipleri düzenlenecek
-
 type User struct {
 	Base
 	Contact
@@ -19,4 +18,8 @@ type User struct {
 	Password   string   `json:"password"`
 	Role       AuthRole `json:"role"`
 	HospitalId string   `json:"hospital_id"`
+}
+
+func (User) TableName() string {
+	return "user"
 }

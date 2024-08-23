@@ -37,34 +37,36 @@ func InitDB(dbc config.Database) {
 			&entities.User{},
 			&entities.City{},
 			&entities.District{},
+			&entities.Job{},
+			&entities.Title{},
 		)
 	})
 	addDatas()
 }
 func addDatas() {
-	var count int64
-	DBClient().Model(&entities.City{}).Count(&count)
-	if count == 0 {
-		log.Println("Adding cities to db")
-		cities := []entities.City{}
-		if err := utils.ReadJsonFile("./pkg/data/city.json", &cities); err != nil {
-			log.Print("Error:", err)
-		}
-		for _, city := range cities {
-			DBClient().Create(&city)
-		}
-	}
-	count = 0
+	addDataIfNotExists(entities.City{}, "./pkg/data/city.json", "Adding cities to db")
+	addDataIfNotExists(entities.District{}, "./pkg/data/districts.json", "Adding districts to db")
+	addDataIfNotExists(entities.Job{}, "./pkg/data/job.json", "Adding jobs to db")
+	addDataIfNotExists(entities.Title{}, "./pkg/data/titles.json", "Adding titles to db")
+}
 
-	DBClient().Model(&entities.District{}).Count(&count)
+func addDataIfNotExists(modelType any, filePath string, logMessage string) {
+	var count int64
+	if err := DBClient().Model(modelType).Count(&count).Error; err != nil {
+		log.Print("Error:", err)
+	}
 	if count == 0 {
-		log.Println("Adding districts to db")
-		districts := []entities.District{}
-		if err := utils.ReadJsonFile("./pkg/data/districts.json", &districts); err != nil {
+		log.Println(logMessage)
+		data := []interface{}{}
+		if err := utils.ReadJsonFile(filePath, &data); err != nil {
 			log.Print("Error:", err)
+			return
 		}
-		for _, district := range districts {
-			DBClient().Create(&district)
+		for _, item := range data {
+			if err := DBClient().Model(modelType).Create(item).Error; err != nil {
+				log.Print("Error:", err)
+			}
+
 		}
 	}
 }
