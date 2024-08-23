@@ -40,6 +40,8 @@ func InitDB(dbc config.Database) {
 			&entities.Job{},
 			&entities.Title{},
 			&entities.Employee{},
+			&entities.Clinic{},
+			&entities.ClinicAndHospital{},
 		)
 	})
 	addDatas()
@@ -49,6 +51,7 @@ func addDatas() {
 	addDataIfNotExists(entities.District{}, "./pkg/data/districts.json", "Adding districts to db")
 	addDataIfNotExists(entities.Job{}, "./pkg/data/job.json", "Adding jobs to db")
 	addDataIfNotExists(entities.Title{}, "./pkg/data/titles.json", "Adding titles to db")
+	addDataIfNotExists(entities.Clinic{}, "./pkg/data/clinic.json", "Adding clinics to db")
 }
 
 func addDataIfNotExists(modelType any, filePath string, logMessage string) {

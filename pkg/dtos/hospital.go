@@ -11,3 +11,7 @@ type DTOHospitalRegister struct {
 	HAreaCode     string  `json:"hospital_area_code" binding:"required"`
 	Manager       DTOUser `json:"manager" binding:"required"`
 }
+
+type DTOClinicAdd struct {
+	ClinicId int `json:"clinic_id" binding:"required"`
+}

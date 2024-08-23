@@ -13,6 +13,9 @@ import (
 
 type IHospitalRepository interface {
 	Register(c context.Context, req dtos.DTOHospitalRegister) error
+	AddClinic(c context.Context, clinicId int, hospitalId string) error
+	GetClinics(c context.Context) (*[]entities.Clinic, error)
+	IsClinicAlreadyAdded(c context.Context, clinicId int, hospitalId string) (bool, error)
 }
 
 type HospitalRepository struct {
@@ -23,6 +26,35 @@ func NewHospitalRepository(db *gorm.DB) IHospitalRepository {
 	return &HospitalRepository{db}
 }
 
+func (ur *HospitalRepository) IsClinicAlreadyAdded(c context.Context, clinicId int, hospitalId string) (bool, error) {
+	var count int64
+	if err := ur.db.WithContext(c).Model(&entities.ClinicAndHospital{}).Where("clinic_id = ? AND hospital_id = ?", clinicId, hospitalId).Count(&count).Error; err != nil {
+		return false, err
+	}
+
+	if count > 0 {
+		return true, nil
+	}
+
+	return false, nil
+}
+func (ur *HospitalRepository) AddClinic(c context.Context, clinicId int, hospitalId string) error {
+	if err := ur.db.WithContext(c).Create(&entities.ClinicAndHospital{ClinicId: clinicId, HospitalId: hospitalId}).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ur *HospitalRepository) GetClinics(c context.Context) (*[]entities.Clinic, error) {
+
+	cacheClinics, err := cache.GetClinics(c, ur.db)
+	if err != nil {
+		return nil, err
+	}
+
+	return cacheClinics, nil
+}
 func (ur *HospitalRepository) Register(c context.Context, req dtos.DTOHospitalRegister) error {
 
 	cacheDistricts, _, err := cache.GetDistrictsAndCities(c, ur.db)

@@ -111,3 +111,19 @@ func GetTitles(c context.Context, db *gorm.DB) (*[]entities.Title, error) {
 
 	return &cacheTitles, nil
 }
+
+func GetClinics(c context.Context, db *gorm.DB) (*[]entities.Clinic, error) {
+
+	cacheClinics := []entities.Clinic{}
+	Get(c, "clinics", &cacheClinics)
+
+	if len(cacheClinics) == 0 || cacheClinics == nil {
+		log.Println("Adding clinics to cache")
+		var clinics []entities.Clinic
+		db.WithContext(c).Find(&clinics)
+		Set(c, "clinics", clinics, 0)
+		cacheClinics = clinics
+	}
+
+	return &cacheClinics, nil
+}
