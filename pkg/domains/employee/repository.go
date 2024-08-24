@@ -16,6 +16,8 @@ type IEmployeeRepository interface {
 	CheckIfEmailOrPhoneNumberOrIdExists(c context.Context, email string, areaCode string, phoneNumber string, ID string) (entities.Employee, error)
 	GetTitles(c context.Context) (*[]entities.Title, error)
 	IsExistBasHekim(c context.Context) (bool, error)
+	GetClinics(c context.Context) (*[]entities.Clinic, error)
+	CheckClinicBelongsToHospital(c context.Context, clinicId int) (bool, error)
 }
 
 type EmployeeRepository struct {
@@ -26,6 +28,14 @@ func NewEmployeeRepository(db *gorm.DB) IEmployeeRepository {
 	return &EmployeeRepository{db}
 }
 
+func (er *EmployeeRepository) CheckClinicBelongsToHospital(c context.Context, clinicId int) (bool, error) {
+	var count int64
+	er.db.WithContext(c).Model(entities.ClinicAndHospital{}).Where("clinic_id = ? AND hospital_id = ?", clinicId, state.CurrentUserHospitalId(c)).Count(&count)
+	if count > 0 {
+		return true, nil
+	}
+	return false, nil
+}
 func (er *EmployeeRepository) Register(c context.Context, out entities.Employee) error {
 	if err := er.db.WithContext(c).Create(&out).Error; err != nil {
 		return err
@@ -57,4 +67,14 @@ func (er *EmployeeRepository) GetTitles(c context.Context) (*[]entities.Title, e
 	}
 
 	return cacheTitles, nil
+}
+
+func (er *EmployeeRepository) GetClinics(c context.Context) (*[]entities.Clinic, error) {
+
+	cacheClinics, err := cache.GetClinics(c, er.db)
+	if err != nil {
+		return nil, err
+	}
+
+	return cacheClinics, nil
 }

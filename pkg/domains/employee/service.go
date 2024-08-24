@@ -31,7 +31,35 @@ func (es *EmployeeService) Register(c context.Context, req dtos.DTOEmployee) err
 		return errors.New("başhekim already exists")
 	}
 
-	// Check if the clinic exists
+	// Check if clinic exists
+	clinics, err := es.EmployeeRepository.GetClinics(c)
+
+	if err != nil {
+		return err
+	}
+
+	isClinicValid := false
+	for _, clinic := range *clinics {
+		if clinic.ID == req.ClinicId {
+			isClinicValid = true
+			break
+		}
+	}
+
+	if !isClinicValid {
+		return errors.New("clinic is not valid")
+	}
+
+	// Check if the clinic belongs to the hospital
+	isBelong, err := es.EmployeeRepository.CheckClinicBelongsToHospital(c, req.ClinicId)
+
+	if err != nil {
+		return err
+	}
+
+	if !isBelong {
+		return errors.New("clinic does not belong to the hospital")
+	}
 
 	// Check if the job and title exists
 	titles, err := es.EmployeeRepository.GetTitles(c)

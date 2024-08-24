@@ -12,3 +12,8 @@ type DTOEmployee struct {
 	Phone       string `json:"phone"`
 	AreaCode    string `json:"area_code"`
 }
+
+type DTOEmployeeClinicInfo struct {
+	ClinicName    string `json:"clinic_name"`
+	EmployeeCount int    `json:"employee_count"`
+}
