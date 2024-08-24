@@ -1,5 +1,7 @@
 package dtos
 
+import "github.com/gofrs/uuid"
+
 type DTOHospitalRegister struct {
 	HTID          string  `json:"hospital_tid" binding:"required"`
 	HName         string  `json:"hospital_name" binding:"required"`
@@ -14,4 +16,19 @@ type DTOHospitalRegister struct {
 
 type DTOClinicAdd struct {
 	ClinicId int `json:"clinic_id" binding:"required"`
+}
+
+type DTOClinics struct {
+	ClinicName     string              `json:"clinic_name"`
+	JobAndEmployee []DTOJobAndEmployee `json:"job_and_employee"`
+}
+
+type DTOJobAndEmployee struct {
+	JobName       string `json:"job_name"`
+	EmployeeCount int    `json:"employee_count"`
+}
+
+type DTOClinicBelongToHospital struct {
+	UUID uuid.UUID `json:"uuid"`
+	Name string    `json:"name"`
 }

@@ -39,13 +39,7 @@ func (es *EmployeeService) Delete(c context.Context, id string) error {
 }
 
 func (es *EmployeeService) Update(c context.Context, req dtos.DTOEmployeeWithId) error {
-	// Check if clinic exists
-	if err := es.checkIfClinicExist(c, req.ClinicId); err != nil {
-		return err
-	}
-
-	// Check if the clinic belongs to the hospital
-	if err := es.checkClinicBelongsToHospital(c, req.ClinicId); err != nil {
+	if err := es.EmployeeRepository.IsValidClinicIdBelongToHospital(c, req.ClinicId, state.CurrentUserHospitalId(c)); err != nil {
 		return err
 	}
 
@@ -91,13 +85,8 @@ func (es *EmployeeService) Register(c context.Context, req dtos.DTOEmployee) err
 		return errors.New("başhekim already exists")
 	}
 
-	// Check if clinic exists
-	if err := es.checkIfClinicExist(c, req.ClinicId); err != nil {
-		return err
-	}
-
-	// Check if the clinic belongs to the hospital
-	if err := es.checkClinicBelongsToHospital(c, req.ClinicId); err != nil {
+	// Get the clinic id that belongs to the hospital
+	if err := es.EmployeeRepository.IsValidClinicIdBelongToHospital(c, req.ClinicId, state.CurrentUserHospitalId(c)); err != nil {
 		return err
 	}
 
@@ -152,42 +141,6 @@ func (es *EmployeeService) checkJobAndTitleExist(c context.Context, titleId int,
 
 	if !isTitleAndJobValid {
 		return errors.New("title or job not valid")
-	}
-
-	return nil
-}
-
-func (es *EmployeeService) checkClinicBelongsToHospital(c context.Context, clinicId int) error {
-	isBelong, err := es.EmployeeRepository.CheckClinicBelongsToHospital(c, clinicId)
-
-	if err != nil {
-		return err
-	}
-
-	if !isBelong {
-		return errors.New("clinic does not belong to the hospital")
-	}
-
-	return nil
-}
-
-func (es *EmployeeService) checkIfClinicExist(c context.Context, clinicId int) error {
-	clinics, err := es.EmployeeRepository.GetClinics(c)
-
-	if err != nil {
-		return err
-	}
-
-	isClinicValid := false
-	for _, clinic := range *clinics {
-		if clinic.ID == clinicId {
-			isClinicValid = true
-			break
-		}
-	}
-
-	if !isClinicValid {
-		return errors.New("clinic is not valid")
 	}
 
 	return nil

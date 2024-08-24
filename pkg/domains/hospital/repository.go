@@ -15,7 +15,10 @@ type IHospitalRepository interface {
 	Register(c context.Context, req dtos.DTOHospitalRegister) error
 	AddClinic(c context.Context, clinicId int, hospitalId string) error
 	GetClinics(c context.Context) (*[]entities.Clinic, error)
+	GetClinicsBelongingToTheHospital(c context.Context, hospitalId string) (*[]dtos.DTOClinicBelongToHospital, error)
+	GetCountOfEmployeesOfEachClinic(c context.Context, clinics *[]dtos.DTOClinicBelongToHospital) (*[]dtos.DTOClinics, error)
 	IsClinicAlreadyAdded(c context.Context, clinicId int, hospitalId string) (bool, error)
+	GetTotalCountOfEmployees(c context.Context, hospitalId string) (int64, error)
 }
 
 type HospitalRepository struct {
@@ -24,6 +27,46 @@ type HospitalRepository struct {
 
 func NewHospitalRepository(db *gorm.DB) IHospitalRepository {
 	return &HospitalRepository{db}
+}
+
+func (ur *HospitalRepository) GetTotalCountOfEmployees(c context.Context, hospitalId string) (int64, error) {
+	var count int64
+	if err := ur.db.WithContext(c).Model(&entities.Employee{}).Where("hospital_id = ?", hospitalId).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (ur *HospitalRepository) GetCountOfEmployeesOfEachClinic(c context.Context, clinics *[]dtos.DTOClinicBelongToHospital) (*[]dtos.DTOClinics, error) {
+	var allJobAndEmployees []dtos.DTOClinics
+
+	for _, clinic := range *clinics {
+		var jobAndEmployees []dtos.DTOJobAndEmployee
+		if err := ur.db.WithContext(c).Raw(`
+        SELECT job.name as job_name, count(*) as employee_count
+        FROM employee
+        JOIN job on employee.job_id = job.id
+        WHERE employee.deleted_at is NULL AND employee.clinic_id = ?
+        GROUP BY job.name`, clinic.UUID).Find(&jobAndEmployees).Error; err != nil {
+			return nil, err
+		}
+		allJobAndEmployees = append(allJobAndEmployees, dtos.DTOClinics{ClinicName: clinic.Name, JobAndEmployee: jobAndEmployees})
+	}
+
+	return &allJobAndEmployees, nil
+}
+
+func (ur *HospitalRepository) GetClinicsBelongingToTheHospital(c context.Context, hospitalId string) (*[]dtos.DTOClinicBelongToHospital, error) {
+	var clinics []dtos.DTOClinicBelongToHospital
+	if err := ur.db.WithContext(c).Raw(`
+	SELECT cah.uuid,clinic.name
+	FROM clinic_and_hospitals as cah
+	JOIN clinic on cah.clinic_id = clinic.id
+	WHERE cah.deleted_at is NULL AND cah.hospital_id = ?`, hospitalId).Find(&clinics).Error; err != nil {
+		return nil, err
+	}
+	return &clinics, nil
 }
 
 func (ur *HospitalRepository) IsClinicAlreadyAdded(c context.Context, clinicId int, hospitalId string) (bool, error) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/yusufguntav/hospital-management/pkg/cache"
 	"github.com/yusufguntav/hospital-management/pkg/entities"
 	"github.com/yusufguntav/hospital-management/pkg/state"
@@ -17,7 +18,7 @@ type IEmployeeRepository interface {
 	GetTitles(c context.Context) (*[]entities.Title, error)
 	IsExistBasHekim(c context.Context) (bool, error)
 	GetClinics(c context.Context) (*[]entities.Clinic, error)
-	CheckClinicBelongsToHospital(c context.Context, clinicId int) (bool, error)
+	IsValidClinicIdBelongToHospital(c context.Context, clinicIdBelongToHospital string, hospitalId string) error
 	CheckEmployeeExists(c context.Context, id string) (bool, error)
 	DeleteEmployee(c context.Context, id string) error
 }
@@ -28,6 +29,18 @@ type EmployeeRepository struct {
 
 func NewEmployeeRepository(db *gorm.DB) IEmployeeRepository {
 	return &EmployeeRepository{db}
+}
+
+func (er *EmployeeRepository) IsValidClinicIdBelongToHospital(c context.Context, clinicIdBelongToHospital string, hospitalId string) error {
+	var clinicAndHospital entities.ClinicAndHospital
+	if err := er.db.WithContext(c).Model(entities.ClinicAndHospital{}).Where("uuid = ? AND hospital_id = ?", clinicIdBelongToHospital, hospitalId).Find(&clinicAndHospital).Error; err != nil {
+		return err
+	}
+
+	if clinicAndHospital.Base.UUID == uuid.Nil {
+		return errors.New("clinic can't find")
+	}
+	return nil
 }
 
 func (er *EmployeeRepository) DeleteEmployee(c context.Context, id string) error {
@@ -53,14 +66,7 @@ func (er *EmployeeRepository) UpdateEmployee(c context.Context, out entities.Emp
 	}
 	return nil
 }
-func (er *EmployeeRepository) CheckClinicBelongsToHospital(c context.Context, clinicId int) (bool, error) {
-	var count int64
-	er.db.WithContext(c).Model(entities.ClinicAndHospital{}).Where("clinic_id = ? AND hospital_id = ?", clinicId, state.CurrentUserHospitalId(c)).Count(&count)
-	if count > 0 {
-		return true, nil
-	}
-	return false, nil
-}
+
 func (er *EmployeeRepository) Register(c context.Context, out entities.Employee) error {
 	if err := er.db.WithContext(c).Create(&out).Error; err != nil {
 		return err
@@ -73,19 +79,6 @@ func (er *EmployeeRepository) IsExistBasHekim(c context.Context) (bool, error) {
 	if count > 0 {
 		return true, nil
 	}
-	return false, nil
-}
-
-func (er *EmployeeRepository) CheckIfEmailOrPhoneNumberOrIdExistsExceptOurEmployee(c context.Context, email string, areaCode string, phoneNumber string, ID string, userUUID string) (bool, error) {
-	var count int64
-	if err := er.db.WithContext(c).Model(&entities.Employee{}).Where("email = ? OR (area_code = ? AND phone = ?) OR id = ?", email, areaCode, phoneNumber, ID).Where("uuid != ?", userUUID).Count(&count).Error; err != nil {
-		return false, err
-	}
-
-	if count > 0 {
-		return true, nil
-	}
-
 	return false, nil
 }
 

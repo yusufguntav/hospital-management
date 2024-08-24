@@ -11,6 +11,7 @@ import (
 type IHospitalService interface {
 	Register(c context.Context, req dtos.DTOHospitalRegister) error
 	AddClinic(c context.Context, req dtos.DTOClinicAdd) error
+	GetClinics(c context.Context) (*[]dtos.DTOClinics, int, error)
 }
 
 type HospitalService struct {
@@ -19,6 +20,36 @@ type HospitalService struct {
 
 func NewHospitalService(hospitalRepository IHospitalRepository) IHospitalService {
 	return &HospitalService{hospitalRepository}
+}
+
+func (us *HospitalService) GetClinics(c context.Context) (*[]dtos.DTOClinics, int, error) {
+
+	// Check hospital id
+	hospitalId := state.CurrentUserHospitalId(c)
+	if hospitalId == "" || hospitalId == "CurrentUserHospitalId" {
+		return nil, 0, errors.New("hospital id not found")
+	}
+
+	// Get clinics of hospital
+	clinics, err := us.HospitalRepository.GetClinicsBelongingToTheHospital(c, hospitalId)
+
+	if err != nil {
+		return nil, 0, err
+	}
+	// Get employee count of each clinic
+	clinicsAndEmployee, err := us.HospitalRepository.GetCountOfEmployeesOfEachClinic(c, clinics)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Get total employee count of hospital
+	totalEmployeeCount, err := us.HospitalRepository.GetTotalCountOfEmployees(c, hospitalId)
+
+	if err != nil {
+		return nil, 0, err
+	}
+	return clinicsAndEmployee, int(totalEmployeeCount), nil
 }
 
 func (us *HospitalService) Register(c context.Context, req dtos.DTOHospitalRegister) error {

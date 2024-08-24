@@ -11,8 +11,19 @@ import (
 func HospitalRoutes(r *gin.RouterGroup, h hospital.IHospitalService) {
 	r.POST("/register", hospitalRegister(h))
 	r.POST("/clinic", middleware.CheckAuth(entities.Manager, entities.Owner), addClinic(h))
+	r.GET("/clinics", middleware.CheckAuth(), getClinics(h))
 }
 
+func getClinics(h hospital.IHospitalService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		clinicsAndEmployee, totalCount, err := h.GetClinics(c)
+		if err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, gin.H{"totalCount": totalCount, "clinics": clinicsAndEmployee})
+	}
+}
 func hospitalRegister(h hospital.IHospitalService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var req dtos.DTOHospitalRegister
