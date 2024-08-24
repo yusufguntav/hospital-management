@@ -23,6 +23,8 @@ type IUserRepository interface {
 	UpdateUser(c context.Context, req dtos.DTOUserWithRoleAndID) error
 	ResetPasswordApprove(c context.Context, phoneNumber string, areaCode string) (int, error)
 	ResetPassword(c context.Context, req dtos.DTOResetPassword) error
+	CheckIfUserExists(c context.Context, id string) (entities.User, error)
+	DeleteSubUser(c context.Context, id string) error
 }
 
 type UserRepository struct {
@@ -153,7 +155,7 @@ func (ur *UserRepository) UpdateUser(c context.Context, req dtos.DTOUserWithRole
 		return errors.New("only owner can downgrade manager role to staff")
 	}
 
-	_, err := checkIfUserExists(c, ur.db, req.UUID)
+	_, err := ur.CheckIfUserExists(c, req.UUID)
 
 	if err != nil {
 		return err
@@ -194,10 +196,18 @@ func checkIfEmailOrPhoneNumberOrIdExists(c context.Context, db *gorm.DB, email s
 	}
 	return entities.User{}, nil
 }
-func checkIfUserExists(c context.Context, db *gorm.DB, id string) (entities.User, error) {
+func (ur *UserRepository) CheckIfUserExists(c context.Context, id string) (entities.User, error) {
 	var user entities.User
-	if err := db.WithContext(c).Where("uuid = ?", id).First(&user).Error; err != nil {
+	if err := ur.db.WithContext(c).Where("uuid = ?", id).First(&user).Error; err != nil {
 		return entities.User{}, err
 	}
 	return user, nil
+}
+
+func (ur *UserRepository) DeleteSubUser(c context.Context, id string) error {
+	if err := ur.db.WithContext(c).Where("uuid = ?", id).Delete(&entities.User{}).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -2,8 +2,11 @@ package user
 
 import (
 	"context"
+	"errors"
 
 	"github.com/yusufguntav/hospital-management/pkg/dtos"
+	"github.com/yusufguntav/hospital-management/pkg/entities"
+	"github.com/yusufguntav/hospital-management/pkg/state"
 )
 
 type IUserService interface {
@@ -12,6 +15,7 @@ type IUserService interface {
 	ResetPasswordApprove(c context.Context, phoneNumber string, areaCode string) (int, error)
 	ResetPassword(c context.Context, req dtos.DTOResetPassword) error
 	UpdateUser(c context.Context, req dtos.DTOUserWithRoleAndID) error
+	DeleteSubUser(c context.Context, id string) error
 }
 
 type UserService struct {
@@ -20,6 +24,31 @@ type UserService struct {
 
 func NewUserService(ur IUserRepository) IUserService {
 	return &UserService{ur}
+}
+func (ur *UserService) DeleteSubUser(c context.Context, id string) error {
+
+	// Check if subuser exist
+	user, err := ur.UserRepository.CheckIfUserExists(c, id)
+
+	if err != nil {
+		return err
+	}
+
+	// Check authorization
+	if user.Role == entities.Owner {
+		return errors.New("can't delete owner")
+	}
+
+	if user.Role == entities.Manager && state.CurrentUserRole(c) != entities.Owner {
+		return errors.New("you can't delete manager")
+	}
+
+	// Delete subuser
+	if err := ur.UserRepository.DeleteSubUser(c, id); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (ur *UserService) UpdateUser(c context.Context, req dtos.DTOUserWithRoleAndID) error {

@@ -14,6 +14,21 @@ func UserRoutes(r *gin.RouterGroup, u user.IUserService) {
 	r.POST("/password-approve/:areaCode/:phoneNumber", userResetPasswordApprove(u))
 	r.POST("/password-reset", userResetPassword(u))
 	r.PUT("/update", middleware.CheckAuth(entities.Owner, entities.Manager), userUpdate(u))
+	r.DELETE("/sub-user/:id", middleware.CheckAuth(entities.Owner, entities.Manager), userDelete(u))
+}
+
+func userDelete(u user.IUserService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		id := c.Param("id")
+
+		if err := u.DeleteSubUser(c, id); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(200, gin.H{"message": "User deleted"})
+	}
 }
 
 func userLogin(u user.IUserService) func(c *gin.Context) {
