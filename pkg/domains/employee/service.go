@@ -12,6 +12,7 @@ import (
 type IEmployeeService interface {
 	Register(c context.Context, req dtos.DTOEmployee) error
 	Update(c context.Context, req dtos.DTOEmployeeWithId) error
+	Delete(c context.Context, id string) error
 }
 
 type EmployeeService struct {
@@ -20,6 +21,21 @@ type EmployeeService struct {
 
 func NewEmployeeService(er IEmployeeRepository) IEmployeeService {
 	return &EmployeeService{EmployeeRepository: er}
+}
+
+func (es *EmployeeService) Delete(c context.Context, id string) error {
+	// Check if the employee exists
+	isExist, err := es.EmployeeRepository.CheckEmployeeExists(c, id)
+	if err != nil {
+		return err
+	}
+
+	if !isExist {
+		return errors.New("employee does not exist")
+	}
+	// Delete the employee
+	return es.EmployeeRepository.DeleteEmployee(c, id)
+
 }
 
 func (es *EmployeeService) Update(c context.Context, req dtos.DTOEmployeeWithId) error {

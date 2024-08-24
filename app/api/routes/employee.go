@@ -9,8 +9,22 @@ import (
 )
 
 func EmployeeRoutes(r *gin.RouterGroup, e employee.IEmployeeService) {
-	r.POST("/register", middleware.CheckAuth(entities.Manager, entities.Owner), employeeRegister(e))
+	r.POST("/", middleware.CheckAuth(entities.Manager, entities.Owner), employeeRegister(e))
 	r.PUT("/", middleware.CheckAuth(entities.Manager, entities.Owner), employeeUpdate(e))
+	r.DELETE("/:id", middleware.CheckAuth(entities.Manager, entities.Owner), employeeDelete(e))
+}
+
+func employeeDelete(e employee.IEmployeeService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+
+		if err := e.Delete(c, id); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(200, gin.H{"message": "Employee deleted successfully"})
+	}
 }
 
 func employeeUpdate(e employee.IEmployeeService) func(c *gin.Context) {

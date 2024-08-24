@@ -18,6 +18,8 @@ type IEmployeeRepository interface {
 	IsExistBasHekim(c context.Context) (bool, error)
 	GetClinics(c context.Context) (*[]entities.Clinic, error)
 	CheckClinicBelongsToHospital(c context.Context, clinicId int) (bool, error)
+	CheckEmployeeExists(c context.Context, id string) (bool, error)
+	DeleteEmployee(c context.Context, id string) error
 }
 
 type EmployeeRepository struct {
@@ -26,6 +28,23 @@ type EmployeeRepository struct {
 
 func NewEmployeeRepository(db *gorm.DB) IEmployeeRepository {
 	return &EmployeeRepository{db}
+}
+
+func (er *EmployeeRepository) DeleteEmployee(c context.Context, id string) error {
+	if err := er.db.WithContext(c).Where("uuid = ?", id).Delete(&entities.Employee{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+func (er *EmployeeRepository) CheckEmployeeExists(c context.Context, id string) (bool, error) {
+	var count int64
+	if err := er.db.WithContext(c).Model(&entities.Employee{}).Where("uuid = ?", id).Count(&count).Error; err != nil {
+		return false, err
+	}
+	if count > 0 {
+		return true, nil
+	}
+	return false, nil
 }
 
 func (er *EmployeeRepository) UpdateEmployee(c context.Context, out entities.Employee, id string) error {
