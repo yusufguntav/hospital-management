@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/google/uuid"
 	"github.com/yusufguntav/hospital-management/pkg/cache"
 	"github.com/yusufguntav/hospital-management/pkg/entities"
 	"github.com/yusufguntav/hospital-management/pkg/state"
@@ -13,7 +12,8 @@ import (
 
 type IEmployeeRepository interface {
 	Register(c context.Context, out entities.Employee) error
-	CheckIfEmailOrPhoneNumberOrIdExists(c context.Context, email string, areaCode string, phoneNumber string, ID string) (entities.Employee, error)
+	UpdateEmployee(c context.Context, out entities.Employee, id string) error
+	CheckIfEmailOrPhoneNumberOrIdExists(c context.Context, email string, areaCode string, phoneNumber string, ID string, uuid string) error
 	GetTitles(c context.Context) (*[]entities.Title, error)
 	IsExistBasHekim(c context.Context) (bool, error)
 	GetClinics(c context.Context) (*[]entities.Clinic, error)
@@ -28,6 +28,12 @@ func NewEmployeeRepository(db *gorm.DB) IEmployeeRepository {
 	return &EmployeeRepository{db}
 }
 
+func (er *EmployeeRepository) UpdateEmployee(c context.Context, out entities.Employee, id string) error {
+	if err := er.db.WithContext(c).Model(&entities.Employee{}).Where("uuid = ?", id).Updates(&out).Error; err != nil {
+		return err
+	}
+	return nil
+}
 func (er *EmployeeRepository) CheckClinicBelongsToHospital(c context.Context, clinicId int) (bool, error) {
 	var count int64
 	er.db.WithContext(c).Model(entities.ClinicAndHospital{}).Where("clinic_id = ? AND hospital_id = ?", clinicId, state.CurrentUserHospitalId(c)).Count(&count)
@@ -50,13 +56,38 @@ func (er *EmployeeRepository) IsExistBasHekim(c context.Context) (bool, error) {
 	}
 	return false, nil
 }
-func (er *EmployeeRepository) CheckIfEmailOrPhoneNumberOrIdExists(c context.Context, email string, areaCode string, phoneNumber string, ID string) (entities.Employee, error) {
-	var employee entities.Employee
-	er.db.WithContext(c).Model(entities.Employee{}).Where("email = ? OR (phone = ? AND area_code = ?) OR id = ?", email, phoneNumber, areaCode, ID).First(&employee)
-	if employee.Base.UUID != uuid.Nil {
-		return employee, errors.New("email, phone number or id already exists")
+
+func (er *EmployeeRepository) CheckIfEmailOrPhoneNumberOrIdExistsExceptOurEmployee(c context.Context, email string, areaCode string, phoneNumber string, ID string, userUUID string) (bool, error) {
+	var count int64
+	if err := er.db.WithContext(c).Model(&entities.Employee{}).Where("email = ? OR (area_code = ? AND phone = ?) OR id = ?", email, areaCode, phoneNumber, ID).Where("uuid != ?", userUUID).Count(&count).Error; err != nil {
+		return false, err
 	}
-	return entities.Employee{}, nil
+
+	if count > 0 {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (er *EmployeeRepository) CheckIfEmailOrPhoneNumberOrIdExists(c context.Context, email string, areaCode string, phoneNumber string, ID string, employeeUUID string) error {
+	var count int64
+	var err error
+	if employeeUUID == "" {
+		err = er.db.WithContext(c).Model(&entities.Employee{}).Where("email = ? OR (area_code = ? AND phone = ?) OR id = ?", email, areaCode, phoneNumber, ID).Count(&count).Error
+	} else {
+		err = er.db.WithContext(c).Model(&entities.Employee{}).Where("email = ? OR (area_code = ? AND phone = ?) OR id = ?", email, areaCode, phoneNumber, ID).Where("uuid != ?", employeeUUID).Count(&count).Error
+	}
+
+	if err != nil {
+		return err
+	}
+
+	if count > 0 {
+		return errors.New("email, phone number or id already exists")
+	}
+
+	return nil
 }
 
 func (er *EmployeeRepository) GetTitles(c context.Context) (*[]entities.Title, error) {

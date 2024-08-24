@@ -52,6 +52,7 @@ require (
 	github.com/Depado/ginprom v1.8.1
 	github.com/gin-contrib/cors v1.7.2
 	github.com/go-redis/redis v6.15.9+incompatible
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgpassfile v1.0.0 // indirect

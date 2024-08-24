@@ -10,6 +10,22 @@ import (
 
 func EmployeeRoutes(r *gin.RouterGroup, e employee.IEmployeeService) {
 	r.POST("/register", middleware.CheckAuth(entities.Manager, entities.Owner), employeeRegister(e))
+	r.PUT("/", middleware.CheckAuth(entities.Manager, entities.Owner), employeeUpdate(e))
+}
+
+func employeeUpdate(e employee.IEmployeeService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		var req dtos.DTOEmployeeWithId
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		if err := e.Update(c, req); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, gin.H{"message": "Employee updated successfully"})
+	}
 }
 
 func employeeRegister(e employee.IEmployeeService) func(c *gin.Context) {
