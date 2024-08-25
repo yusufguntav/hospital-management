@@ -13,6 +13,7 @@ type IEmployeeService interface {
 	Register(c context.Context, req dtos.DTOEmployee) error
 	Update(c context.Context, req dtos.DTOEmployeeWithId) error
 	Delete(c context.Context, id string) error
+	GetEmployees(c context.Context, pageNumber int, filter dtos.DTOEmployeeFilter) (*[]dtos.DTOEmployeeWithId, int, error)
 }
 
 type EmployeeService struct {
@@ -23,6 +24,15 @@ func NewEmployeeService(er IEmployeeRepository) IEmployeeService {
 	return &EmployeeService{EmployeeRepository: er}
 }
 
+func (es *EmployeeService) GetEmployees(c context.Context, pageNumber int, filter dtos.DTOEmployeeFilter) (*[]dtos.DTOEmployeeWithId, int, error) {
+	employee, pageCount, err := es.EmployeeRepository.GetEmployeeWithPaginated(c, pageNumber, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return dtos.EmployeeToDTOList(employee), pageCount, nil
+
+}
 func (es *EmployeeService) Delete(c context.Context, id string) error {
 	// Check if the employee exists
 	isExist, err := es.EmployeeRepository.CheckEmployeeExists(c, id)

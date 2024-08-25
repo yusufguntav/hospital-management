@@ -6,8 +6,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/yusufguntav/hospital-management/pkg/cache"
+	"github.com/yusufguntav/hospital-management/pkg/dtos"
 	"github.com/yusufguntav/hospital-management/pkg/entities"
 	"github.com/yusufguntav/hospital-management/pkg/state"
+	"github.com/yusufguntav/hospital-management/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -21,6 +23,7 @@ type IEmployeeRepository interface {
 	IsValidClinicIdBelongToHospital(c context.Context, clinicIdBelongToHospital string, hospitalId string) error
 	CheckEmployeeExists(c context.Context, id string) (bool, error)
 	DeleteEmployee(c context.Context, id string) error
+	GetEmployeeWithPaginated(c context.Context, pageNumber int, filter dtos.DTOEmployeeFilter) (*[]entities.Employee, int, error)
 }
 
 type EmployeeRepository struct {
@@ -29,6 +32,42 @@ type EmployeeRepository struct {
 
 func NewEmployeeRepository(db *gorm.DB) IEmployeeRepository {
 	return &EmployeeRepository{db}
+}
+
+func (er *EmployeeRepository) GetEmployeeWithPaginated(c context.Context, pageNumber int, filter dtos.DTOEmployeeFilter) (*[]entities.Employee, int, error) {
+
+	var employee []entities.Employee
+	query := "hospital_id = ?  "
+	args := []interface{}{
+		state.CurrentUserHospitalId(c),
+	}
+
+	if filter.Name != "" {
+		query += "AND name LIKE ?  "
+		args = append(args, "%"+filter.Name+"%")
+	}
+	if filter.Surname != "" {
+		query += "AND surname LIKE ? "
+		args = append(args, "%"+filter.Surname+"%")
+	}
+	if filter.ID != "" {
+		query += "AND id LIKE ? "
+		args = append(args, "%"+filter.ID+"%")
+	}
+	if filter.JobId != 0 {
+		query += "AND job_id = ? "
+		args = append(args, filter.JobId)
+	}
+	if filter.TitleId != 0 {
+		query += "AND title_id = ? "
+		args = append(args, filter.TitleId)
+	}
+
+	totalPage, err := utils.Pagination(&employee, pageNumber, er.db, c, query, args...)
+	if err != nil {
+		return nil, 0, err
+	}
+	return &employee, totalPage, nil
 }
 
 func (er *EmployeeRepository) IsValidClinicIdBelongToHospital(c context.Context, clinicIdBelongToHospital string, hospitalId string) error {

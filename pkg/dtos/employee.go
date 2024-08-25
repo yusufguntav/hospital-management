@@ -1,5 +1,7 @@
 package dtos
 
+import "github.com/yusufguntav/hospital-management/pkg/entities"
+
 type DTOEmployee struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
@@ -30,4 +32,36 @@ type DTOEmployeeWithId struct {
 type DTOEmployeeClinicInfo struct {
 	ClinicName    string `json:"clinic_name"`
 	EmployeeCount int    `json:"employee_count"`
+}
+
+type DTOEmployeeFilter struct {
+	JobId   int    `json:"job_id"`
+	TitleId int    `json:"title_id"`
+	Name    string `json:"name"`
+	Surname string `json:"surname"`
+	ID      string `json:"id"`
+}
+
+func ToDTOWithId(e entities.Employee) DTOEmployeeWithId {
+	return DTOEmployeeWithId{
+		UUID:        e.Base.UUID.String(),
+		ID:          e.ID,
+		Name:        e.Name,
+		Surname:     e.Surname,
+		ClinicId:    e.ClinicId,
+		JobId:       e.JobId,
+		TitleId:     e.TitleId,
+		WorkingDays: e.WorkingDays,
+		Email:       e.Email,
+		Phone:       e.Phone,
+		AreaCode:    e.AreaCode,
+	}
+}
+
+func EmployeeToDTOList(es *[]entities.Employee) *[]DTOEmployeeWithId {
+	var dtos []DTOEmployeeWithId
+	for _, e := range *es {
+		dtos = append(dtos, ToDTOWithId(e))
+	}
+	return &dtos
 }
