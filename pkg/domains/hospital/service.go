@@ -5,7 +5,9 @@ import (
 	"errors"
 
 	"github.com/yusufguntav/hospital-management/pkg/dtos"
+	"github.com/yusufguntav/hospital-management/pkg/entities"
 	"github.com/yusufguntav/hospital-management/pkg/state"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type IHospitalService interface {
@@ -53,7 +55,69 @@ func (us *HospitalService) GetClinics(c context.Context) (*[]dtos.DTOClinics, in
 }
 
 func (us *HospitalService) Register(c context.Context, req dtos.DTOHospitalRegister) error {
-	return us.HospitalRepository.Register(c, req)
+
+	cacheDistricts, err := us.HospitalRepository.GetDistricts(c)
+
+	if err != nil {
+		return err
+	}
+
+	// Check if district code is valid
+	isCityAndDistrictValid := false
+	for _, district := range *cacheDistricts {
+		if district.ID == req.HDistrictCode && district.CityId == req.HCityCode {
+			isCityAndDistrictValid = true
+			break
+		}
+	}
+
+	if !isCityAndDistrictValid {
+		return errors.New("invalid city or district code")
+	}
+
+	// Check if email, phone number or id already exists
+
+	//For hospital
+	err = us.HospitalRepository.CheckIfHospitalUniqueFieldsExist(c, req.HEmail, req.HAreaCode, req.HPhone, req.HTID)
+
+	if err != nil {
+		return err
+	}
+
+	//For user
+	err = us.HospitalRepository.CheckIfUserUniqueFieldsExist(c, req.Manager.Email, req.Manager.AreaCode, req.Manager.Phone, req.Manager.ID)
+
+	if err != nil {
+		return err
+	}
+
+	// Password hashing
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.Manager.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	// Hospital creation
+	entHospital := entities.Hospital{
+		TID:          req.HTID,
+		Name:         req.HName,
+		Address:      req.HAddress,
+		CityCode:     req.HCityCode,
+		DistrictCode: req.HDistrictCode,
+		Contact:      entities.Contact{Email: req.HEmail, Phone: req.HPhone, AreaCode: req.HAreaCode},
+	}
+
+	// Owner creation
+	entUser := entities.User{
+		ID:       req.Manager.ID,
+		Name:     req.Manager.Name,
+		Surname:  req.Manager.Surname,
+		Contact:  entities.Contact{Email: req.Manager.Email, Phone: req.Manager.Phone, AreaCode: req.Manager.AreaCode},
+		Role:     entities.Owner,
+		Password: string(passwordHash),
+	}
+
+	return us.HospitalRepository.Register(c, entHospital, entUser)
 }
 
 func (us *HospitalService) AddClinic(c context.Context, req dtos.DTOClinicAdd) error {

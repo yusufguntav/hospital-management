@@ -7,24 +7,55 @@ import (
 	"github.com/yusufguntav/hospital-management/pkg/cache"
 	"github.com/yusufguntav/hospital-management/pkg/dtos"
 	"github.com/yusufguntav/hospital-management/pkg/entities"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type IHospitalRepository interface {
-	Register(c context.Context, req dtos.DTOHospitalRegister) error
+	Register(c context.Context, hospital entities.Hospital, owner entities.User) error
 	AddClinic(c context.Context, clinicId int, hospitalId string) error
 	GetClinics(c context.Context) (*[]entities.Clinic, error)
 	GetClinicsBelongingToTheHospital(c context.Context, hospitalId string) (*[]dtos.DTOClinicBelongToHospital, error)
 	GetCountOfEmployeesOfEachClinic(c context.Context, clinics *[]dtos.DTOClinicBelongToHospital) (*[]dtos.DTOClinics, error)
 	IsClinicAlreadyAdded(c context.Context, clinicId int, hospitalId string) (bool, error)
 	GetTotalCountOfEmployees(c context.Context, hospitalId string) (int64, error)
+	GetDistricts(c context.Context) (*[]entities.District, error)
+	CheckIfHospitalUniqueFieldsExist(c context.Context, email string, areaCode string, phoneNumber string, TID string) error
+	CheckIfUserUniqueFieldsExist(c context.Context, email string, areaCode string, phoneNumber string, TID string) error
 }
 
 type HospitalRepository struct {
 	db *gorm.DB
 }
 
+func (er *HospitalRepository) CheckIfHospitalUniqueFieldsExist(c context.Context, email string, areaCode string, phoneNumber string, TID string) error {
+	var count int64
+	err := er.db.WithContext(c).Model(&entities.Hospital{}).Where("email = ? OR (area_code = ? AND phone = ?) OR t_id = ?", email, areaCode, phoneNumber, TID).Count(&count).Error
+
+	if err != nil {
+		return err
+	}
+
+	if count > 0 {
+		return errors.New("hospital email, phone number or tid already exists")
+	}
+
+	return nil
+}
+
+func (er *HospitalRepository) CheckIfUserUniqueFieldsExist(c context.Context, email string, areaCode string, phoneNumber string, TID string) error {
+	var count int64
+	err := er.db.WithContext(c).Model(&entities.User{}).Where("email = ? OR (area_code = ? AND phone = ?) OR id = ?", email, areaCode, phoneNumber, TID).Count(&count).Error
+
+	if err != nil {
+		return err
+	}
+
+	if count > 0 {
+		return errors.New("user email, phone number or id already exists")
+	}
+
+	return nil
+}
 func NewHospitalRepository(db *gorm.DB) IHospitalRepository {
 	return &HospitalRepository{db}
 }
@@ -98,66 +129,22 @@ func (ur *HospitalRepository) GetClinics(c context.Context) (*[]entities.Clinic,
 
 	return cacheClinics, nil
 }
-func (ur *HospitalRepository) Register(c context.Context, req dtos.DTOHospitalRegister) error {
-
-	cacheDistricts, _, err := cache.GetDistrictsAndCities(c, ur.db)
-
-	if err != nil {
-		return err
-	}
-
-	// Check if district code is valid
-	isCityAndDistrictValid := false
-	for _, district := range *cacheDistricts {
-		if district.ID == req.HDistrictCode && district.CityId == req.HCityCode {
-			isCityAndDistrictValid = true
-			break
-		}
-	}
-
-	if !isCityAndDistrictValid {
-		return errors.New("invalid city or district code")
-	}
-
-	// Password hashing
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.Manager.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-
+func (ur *HospitalRepository) Register(c context.Context, hospital entities.Hospital, owner entities.User) error {
 	// Start transaction
 	tx := ur.db.Begin()
 	if tx.Error != nil {
 		return tx.Error
 	}
 
-	// Hospital creation
-	entHospital := entities.Hospital{
-		TID:          req.HTID,
-		Name:         req.HName,
-		Address:      req.HAddress,
-		CityCode:     req.HCityCode,
-		DistrictCode: req.HDistrictCode,
-		Contact:      entities.Contact{Email: req.HEmail, Phone: req.HPhone, AreaCode: req.HAreaCode},
-	}
-
-	if err := tx.WithContext(c).Create(&entHospital).Error; err != nil {
+	if err := tx.WithContext(c).Create(&hospital).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	// Owner user creation
-	entUser := entities.User{
-		ID:         req.Manager.ID,
-		Name:       req.Manager.Name,
-		Surname:    req.Manager.Surname,
-		Contact:    entities.Contact{Email: req.Manager.Email, Phone: req.Manager.Phone, AreaCode: req.Manager.AreaCode},
-		Role:       entities.Owner,
-		HospitalId: entHospital.Base.UUID.String(),
-	}
+	// Set hospital id
+	owner.HospitalId = hospital.Base.UUID.String()
 
-	entUser.Password = string(passwordHash)
-	if err := tx.WithContext(c).Create(&entUser).Error; err != nil {
+	if err := tx.WithContext(c).Create(&owner).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -166,6 +153,14 @@ func (ur *HospitalRepository) Register(c context.Context, req dtos.DTOHospitalRe
 	if err := tx.Commit().Error; err != nil {
 		return err
 	}
-
 	return nil
+}
+
+func (ur *HospitalRepository) GetDistricts(c context.Context) (*[]entities.District, error) {
+	cacheDistricts, _, err := cache.GetDistrictsAndCities(c, ur.db)
+	if err != nil {
+		return nil, err
+	}
+
+	return cacheDistricts, nil
 }
